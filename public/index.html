@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>NFT Магазин</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .product { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+    img { max-width: 150px; display: block; }
+  </style>
+</head>
+<body>
+  <h1>🎁 NFT Магазин</h1>
+  <div id="products">Загрузка...</div>
+
+  <script>
+    fetch('/products')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('products');
+        if (!data.length) return container.innerHTML = 'Нет товаров 😢';
+        container.innerHTML = data.map(p => `
+          <div class="product">
+            <img src="${p.image}" />
+            <h3>${p.name}</h3>
+            <p>Цена: ${p.price} TON</p>
+          </div>
+        `).join('');
+      })
+      .catch(err => {
+        document.getElementById('products').innerText = 'Ошибка загрузки товаров 😞';
+      });
+  </script>
+</body>
+</html>

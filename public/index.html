@@ -2,15 +2,17 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NFT Магазин</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
-    .product { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
-    img { max-width: 150px; display: block; }
+    .product { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; max-width: 300px; }
+    img { max-width: 100%; display: block; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <h1>🎁 NFT Магазин</h1>
+  <p>Выбери подарок:</p>
   <div id="products">Загрузка...</div>
 
   <script>
@@ -18,17 +20,20 @@
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('products');
-        if (!data.length) return container.innerHTML = 'Нет товаров 😢';
+        if (!data.length) {
+          container.textContent = 'Подарков пока нет 😔';
+          return;
+        }
         container.innerHTML = data.map(p => `
           <div class="product">
-            <img src="${p.image}" />
+            <img src="${p.image}" alt="${p.name}" />
             <h3>${p.name}</h3>
             <p>Цена: ${p.price} TON</p>
           </div>
         `).join('');
       })
-      .catch(err => {
-        document.getElementById('products').innerText = 'Ошибка загрузки товаров 😞';
+      .catch(() => {
+        document.getElementById('products').textContent = 'Ошибка загрузки товаров';
       });
   </script>
 </body>

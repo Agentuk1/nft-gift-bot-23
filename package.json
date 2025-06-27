@@ -8,8 +8,8 @@
     "init-db": "node init-db.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
+    "express": "^4.21.2",
     "node-telegram-bot-api": "^0.61.0",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.7"
   }
 }

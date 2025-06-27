@@ -5,7 +5,14 @@ CREATE TABLE IF NOT EXISTS products (
   image TEXT
 );
 
+CREATE TABLE IF NOT EXISTS purchases (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  product_id INTEGER NOT NULL,
+  purchase_date TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
 INSERT INTO products (name, price, image) VALUES
-('Подарочный стикерпак', 199, 'https://via.placeholder.com/150?text=Sticker'),
-('NFT-открытка', 299, 'https://via.placeholder.com/150?text=NFT+Card'),
-('Секретный подарок', 499, 'https://via.placeholder.com/150?text=Secret+Gift');
+('NFT Стикерпак', 199, 'https://example.com/image1.png'),
+('NFT Открытка', 299, 'https://example.com/image2.png'),
+('NFT Подарок', 499, 'https://example.com/image3.png');

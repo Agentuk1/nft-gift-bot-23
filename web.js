@@ -1,3 +1,5 @@
+require('./init-db'); // ← добавь эту строку сверху, чтобы база создавалась при запуске
+
 const db = new sqlite3.Database('./shop.db', (err) => {
   if (err) console.error(err.message);
   else console.log('База данных открыта');

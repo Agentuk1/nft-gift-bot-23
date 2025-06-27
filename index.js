@@ -1,12 +1,23 @@
 const TelegramBot = require('node-telegram-bot-api');
-const token = process.env.BOT_TOKEN || '8060999394:AAGfsWVfOXvQal5SuaTzkyCewQmMfarzxl4';
-const bot = new TelegramBot(token, { polling: true });
+const sqlite3 = require('sqlite3').verbose();
+const bot = new TelegramBot('8060999394:AAHivnbDHZ3XO0WVg9cm5ABoKj6cUxDUV8Q', { polling: true });
+const db = new sqlite3.Database('./shop.db');
 
-bot.onText(/\/start/, (msg) => {
-  bot.sendMessage(msg.chat.id, "🎁 Добро пожаловать! Открыть магазин:", {
+bot.onText(/\/start/, msg => {
+  bot.sendMessage(msg.chat.id, '🎁 Привет! Открыть магазин можно через эту кнопку 👇', {
     reply_markup: {
-      keyboard: [[{ text: "🛍 Открыть магазин", web_app: { url: 'https://nft-gift-bot-23.onrender.com' } }]],
-      resize_keyboard: true
+      inline_keyboard: [
+        [{ text: '🛍 Открыть магазин', web_app: { url: 'https://nft-gift-bot-23.onrender.com' } }]
+      ]
     }
+  });
+});
+
+bot.onText(/\/products/, msg => {
+  db.all('SELECT * FROM products', (err, rows) => {
+    if (err || !rows) return bot.sendMessage(msg.chat.id, 'Ошибка при получении товаров');
+    if (rows.length === 0) return bot.sendMessage(msg.chat.id, 'Товары пока отсутствуют');
+    let text = rows.map(p => `• ${p.name} — ${p.price} TON`).join('\n');
+    bot.sendMessage(msg.chat.id, text);
   });
 });

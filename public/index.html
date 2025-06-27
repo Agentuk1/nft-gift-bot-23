@@ -2,66 +2,75 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>🎁 NFT Магазин</title>
+  <title>NFT Магазин</title>
   <style>
-    body { font-family:sans-serif; padding:20px; max-width:600px; margin:auto }
-    .product { border:1px solid #ccc; padding:10px; margin:10px 0; display:flex }
-    img { width:80px; height:80px; margin-right:15px }
-    button{padding:5px 10px;}
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 20px auto; }
+    .product { border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex; align-items: center; }
+    .product img { width: 80px; height: 80px; margin-right: 15px; }
+    button { padding: 5px 10px; }
   </style>
 </head>
 <body>
-  <h1>🎁 NFT Магазин</h1>
-  <div id="products">Загрузка...</div>
-  <h2>История</h2>
-  <div id="history">...</div>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand(); tg.ready();
+<h1>NFT Магазин</h1>
+<div id="products"></div>
 
-    let user_id = tg.initDataUnsafe.user?.id || 0;
+<h2>История покупок</h2>
+<div id="history"></div>
 
-    function loadProducts() {
-      fetch('/products').then(r => r.json()).then(data => {
-        let html = data.map(p => `
-          <div class="product">
-            <img src="${p.image}" />
-            <div>
-              <b>${p.name}</b><br>Цена: ${p.price} TON<br>
-              <button onclick="buy(${p.id})">Купить</button>
-            </div>
+<script>
+  const user_id = 1; // заглушка: в реальном боте user_id будет из Telegram
+
+  function fetchProducts() {
+    fetch('/products').then(res => res.json()).then(data => {
+      const container = document.getElementById('products');
+      container.innerHTML = '';
+      data.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
+          <img src="${p.image}" alt="${p.name}" />
+          <div>
+            <b>${p.name}</b><br />
+            Цена: ${p.price} руб.<br />
+            <button onclick="buy(${p.id})">Купить</button>
           </div>
-        `).join('');
-        document.getElementById('products').innerHTML = html || 'Нет товаров';
-        loadHistory();
+        `;
+        container.appendChild(div);
       });
-    }
+    });
+  }
 
-    function buy(id) {
-      fetch('/purchase', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ user_id, product_id: id })
-      }).then(r => r.json()).then(res => {
-        if (res.success) {
-          alert('✅ Куплено!');
-          loadHistory();
-        }
+  function fetchHistory() {
+    fetch(`/purchases/${user_id}`).then(res => res.json()).then(data => {
+      const container = document.getElementById('history');
+      container.innerHTML = '';
+      if (data.length === 0) container.textContent = 'Покупок нет';
+      data.forEach(h => {
+        const div = document.createElement('div');
+        div.textContent = `${h.name} — ${h.price} руб. — ${new Date(h.purchase_date).toLocaleString()}`;
+        container.appendChild(div);
       });
-    }
+    });
+  }
 
-    function loadHistory() {
-      fetch('/purchases/'+user_id).then(r => r.json()).then(data => {
-        document.getElementById('history').innerHTML = data.map(h =>
-          `<div>${h.name} — ${h.price} TON<br><small>${new Date(h.purchase_date).toLocaleString()}</small></div>`
-        ).join('') || 'Покупок нет';
+  function buy(product_id) {
+    fetch('/purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id, product_id })
+    }).then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('Покупка успешна!');
+          fetchHistory();
+        } else alert('Ошибка: ' + (data.error || 'Неизвестно'));
       });
-    }
+  }
 
-    loadProducts();
-  </script>
+  fetchProducts();
+  fetchHistory();
+</script>
+
 </body>
 </html>
-

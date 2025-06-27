@@ -1,43 +1,59 @@
-const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
-const app = express();
-const PORT = process.env.PORT || 3000;
+import express from 'express';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 
-const db = new sqlite3.Database('./shop.db', err => {
-  if (err) console.error(err.message);
-  else console.log('📦 БД подключена');
-});
+const app = express();
+const PORT = 3000;
 
 app.use(express.json());
+
+async function openDb() {
+  return open({
+    filename: './shop.db',
+    driver: sqlite3.Database
+  });
+}
+
+app.get('/products', async (req, res) => {
+  const db = await openDb();
+  const products = await db.all('SELECT * FROM products');
+  res.json(products);
+  await db.close();
+});
+
+app.get('/purchases/:user_id', async (req, res) => {
+  const userId = req.params.user_id;
+  const db = await openDb();
+  const purchases = await db.all(`
+    SELECT purchases.purchase_date, products.name, products.price 
+    FROM purchases JOIN products ON purchases.product_id = products.id 
+    WHERE purchases.user_id = ? ORDER BY purchases.purchase_date DESC
+  `, userId);
+  res.json(purchases);
+  await db.close();
+});
+
+app.post('/purchase', async (req, res) => {
+  const { user_id, product_id } = req.body;
+  if (!user_id || !product_id) return res.json({ success: false, error: 'Нет user_id или product_id' });
+
+  const db = await openDb();
+
+  // Проверяем, есть ли такой продукт
+  const product = await db.get('SELECT * FROM products WHERE id = ?', product_id);
+  if (!product) {
+    await db.close();
+    return res.json({ success: false, error: 'Продукт не найден' });
+  }
+
+  await db.run('INSERT INTO purchases (user_id, product_id) VALUES (?, ?)', user_id, product_id);
+  await db.close();
+
+  res.json({ success: true });
+});
+
 app.use(express.static('public'));
 
-app.get('/products', (req, res) => {
-  db.all('SELECT * FROM products', (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
+app.listen(PORT, () => {
+  console.log(`🚀 Сервер на http://localhost:${PORT}`);
 });
-
-app.post('/purchase', (req, res) => {
-  const { user_id, product_id } = req.body;
-  if (!user_id || !product_id) return res.status(400).json({ error: 'Неверные данные' });
-  db.run('INSERT INTO purchases(user_id, product_id) VALUES (?, ?)', [user_id, product_id], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true, id: this.lastID });
-  });
-});
-
-app.get('/purchases/:user_id', (req, res) => {
-  const uid = req.params.user_id;
-  db.all(`
-    SELECT p.name, p.price, pur.purchase_date
-    FROM purchases pur
-    JOIN products p ON pur.product_id = p.id
-    WHERE pur.user_id = ?
-  `, [uid], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
-  });
-});
-
-app.listen(PORT, () => console.log(`🚀 Сервер на http://localhost:${PORT}`));

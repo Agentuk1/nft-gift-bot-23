@@ -1,3 +1,2 @@
-node_modules
-shop.db
-.env
+* text=auto
+node_modules/

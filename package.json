@@ -1,15 +1,21 @@
 {
   "name": "nft-gift-bot",
   "version": "1.0.0",
-  "main": "web.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node web.js",
-    "bot": "node index.js",
-    "init-db": "node init-db.js"
+    "init-db": "node init-db.js",
+    "start-bot": "node index.js",
+    "start-web": "node web.js",
+    "web": "node web.js",
+    "start": "node index.js"
   },
   "dependencies": {
+    "axios": "^1.2.0",
+    "dotenv": "^16.6.1",
+    "ejs": "^3.1.9",
     "express": "^4.21.2",
     "node-telegram-bot-api": "^0.61.0",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "telegraf": "^4.16.3"
   }
 }
